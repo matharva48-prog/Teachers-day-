@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teachers' Day Special - Guess The Song!</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: radial-gradient(circle at top, #1e1b4b, #0f172a);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 550px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .counter {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+    .emoji-box {
+      font-size: 3.5rem;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 15px;
+      margin-bottom: 25px;
+      padding: 10px;
+    }
+    .timer {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #facc15;
+      min-height: 60px;
+      margin-bottom: 20px;
+    }
+    .answer-box {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #4ade80;
+      min-height: 35px;
+      margin-bottom: 25px;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-start {
+      background: #6366f1;
+      color: #fff;
+    }
+    .btn-start:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+    }
+    .btn-play {
+      background: #10b981;
+      color: #fff;
+      display: none;
+    }
+    .btn-play:hover {
+      background: #059669;
+    }
+    .btn-next {
+      background: #0284c7;
+      color: #fff;
+      display: none;
+    }
+    .btn-next:hover {
+      background: #0369a1;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">Teachers' Day Game 🎵</div>
+    <div class="counter" id="questionNumber">Question 1 of 20</div>
+
+    <div class="emoji-box" id="emojiContainer">🥷 💔 🏃‍♂️ 🫵</div>
+    <div class="timer" id="timerDisplay"></div>
+    <div class="answer-box" id="answerDisplay"></div>
+
+    <div class="btn-group">
+      <button class="btn-start" id="startBtn" onclick="startTimer()">Start Timer (5s)</button>
+      <button class="btn-play" id="playBtn" onclick="playSong()">▶️ Play Audio</button>
+      <button class="btn-next" id="nextBtn" onclick="nextSong()">Next ➡️</button>
+    </div>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+
+  <script>
+    const songs = [
+      { emojis: "🥷 💔 🏃‍♂️ 🫵", title: "Chura Ke Dil Mera", audio: "song1.mp3" },
+      { emojis: "👠 🚶‍♀️ 💨 💃", title: "Hi Chaal Turu Turu", audio: "song2.mp3" },
+      { emojis: "💧 💧 🌧️ 🔥 💛", title: "Tip Tip Barsa Paani", audio: "songs/song3.mp3" },
+      { emojis: "👁️ 😉 👧 👦", title: "Aankh Maarey", audio: "songs/song4.mp3" },
+      { emojis: "🧳 ✈️ 😢 🚫 👋", title: "Pardesi Pardesi Jaana Nahi", audio: "songs/song5.mp3" },
+      { emojis: "🚂 💨 💃 🕺", title: "Chaiyya Chaiyya", audio: "songs/song6.mp3" },
+      { emojis: "🤔 💓 🌧️ 🎸", title: "Kuch Kuch Hota Hai", audio: "songs/song7.mp3" },
+      { emojis: "🎸 👕 ❌ 🕺 🏖️", title: "O O Jaane Jaana", audio: "songs/song8.mp3" },
+      { emojis: "🧚‍♀️ ✨ 💃 🪘", title: "Apsara Aali", audio: "songs/song9.mp3" },
+      { emojis: "👠 🚶‍♀️ 💨 💃", title: "Hi Chaal Turu Turu", audio: "songs/song10.mp3" },
+      { emojis: "🙆‍♂️ 🕺 🕶️ 🔥", title: "Tauba Tauba", audio: "songs/song11.mp3" },
+      { emojis: "🚶‍♂️ 💨 ❤️ 🚢", title: "Chaleya", audio: "songs/song12.mp3" },
+      { emojis: "🧡 🌺 🛕 💑", title: "Kesariya", audio: "songs/song13.mp3" },
+      { emojis: "🤝 ❤️ 🐺 🌙", title: "Apna Bana Le", audio: "songs/song14.mp3" },
+      { emojis: "🌙 💃 👻 ✨", title: "Aaj Ki Raat", audio: "songs/song15.mp3" },
+      { emojis: "🥁 🕺 💃 🍻 ⚡", title: "Zingaat", audio: "songs/song16.mp3" },
+      { emojis: "🐔 🏃‍♂️ 💨 🎶", title: "Kombdi Palali", audio: "songs/song17.mp3" },
+      { emojis: "🙌 🇮🇳 🏆 🎶", title: "Jai Ho", audio: "songs/song18.mp3" },
+      { emojis: "💃 🍷 🇪🇸 🎸", title: "Senorita", audio: "songs/song19.mp3" },
+      { emojis: "🚢 👨‍👩‍👧‍👦 🎉 🕺 💃", title: "Galla Goodiyan", audio: "songs/song20.mp3" }
+    ];
+
+    let currentIndex = 0;
+    let timerInterval = null;
+    const player = document.getElementById("audioPlayer");
+
+    function loadQuestion() {
+      const current = songs[currentIndex];
+      document.getElementById("questionNumber").innerText = `Question ${currentIndex + 1} of ${songs.length}`;
+      document.getElementById("emojiContainer").innerText = current.emojis;
+      document.getElementById("timerDisplay").innerText = "";
+      document.getElementById("answerDisplay").innerText = "";
+      
+      document.getElementById("startBtn").style.display = "inline-block";
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("playBtn").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+
+      player.pause();
+      player.currentTime = 0;
+    }
+
+    function startTimer() {
+      document.getElementById("startBtn").disabled = true;
+      let timeLeft = 5;
+      document.getElementById("timerDisplay").innerText = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          document.getElementById("timerDisplay").innerText = timeLeft;
+        } else {
+          clearInterval(timerInterval);
+          document.getElementById("timerDisplay").innerText = "Time's Up! ⏰";
+          document.getElementById("startBtn").style.display = "none";
+          document.getElementById("playBtn").style.display = "inline-block";
+        }
+      }, 1000);
+    }
+
+    function playSong() {
+      const current = songs[currentIndex];
+      player.src = current.audio;
+      player.play().catch(e => alert("Please make sure audio file exists at: " + current.audio));
+      
+      document.getElementById("answerDisplay").innerText = "🎉 " + current.title;
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function nextSong() {
+      currentIndex++;
+      if (currentIndex < songs.length) {
+        loadQuestion();
+      } else {
+        document.querySelector(".card").innerHTML = `
+          <h2 style="font-size: 2rem; color: #facc15; margin-bottom: 10px;">That's all! 🎉</h2>
+          <p style="color: #cbd5e1; font-size: 1.1rem;">Happy Teachers' Day! Hope everyone enjoyed the game.</p>
+        `;
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
